@@ -1,6 +1,6 @@
 Mobile Phone Price Classification — Hardware Analysis
 
-Tools: MySQL, HTML/CSS/JavaScript, Chart.js
+Tools: MySQL, HTML/CSS/JavaScript
 
 Dataset: 
 - Source: Mobile Price Classification dataset (Kaggle)
