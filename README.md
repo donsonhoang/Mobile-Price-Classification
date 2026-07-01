@@ -1,21 +1,42 @@
-Teen Mental Health & Social Media — Dashboard Analysis
+Mobile Phone Price Classification — Hardware Analysis
 
 Tools: MySQL, HTML/CSS/JavaScript, Chart.js
-Dataset: 1,200 survey responses from teenagers aged 13–19
 
-I loaded a teen mental health dataset into MySQL and wrote queries to explore how social media habits, sleep patterns, and platform usage relate to stress, anxiety, addiction levels, and depression across different age groups and genders. The findings were used to build a multi-tab interactive dashboard with platform comparisons, demographic breakdowns, and a personal risk profile explorer.
+Dataset: 
+- Source: Mobile Price Classification dataset (Kaggle)
+- Split: 2,000 training rows + 1,000 test rows
+- Price tiers: 0 = Budget, 1 = Mid-Range, 2 = High-End, 3 = Flagship
+- Distribution: Perfectly balanced — 500 phones per tier
+- Features: 20 specs including RAM, battery, screen resolution, camera, cores, clock speed, and connectivity flags (4G, 3G, WiFi, Bluetooth, Dual SIM, Touch Screen)
 
-Questions explored:
+This dataset contains 2,000 mobile phones with 20 hardware and connectivity specifications, each labeled with a price range from Budget to Flagship. My goal was to figure out which specs genuinely separate cheap phones from expensive ones — and which ones don't matter at all.
+The answer turned out to be surprisingly simple: RAM explains nearly everything.
 
+Key Findings
 
-How common is depression among teens, and what does the average stress and anxiety profile look like?
+RAM is the dominant predictor
+- Pearson correlation with price: **r = 0.917**
+- Budget phones average 785 MB RAM; flagship phones average 3,449 MB — a **4.4× difference**
+- No other single feature comes close to this predictive power
 
-Does the platform a teen uses (Instagram, TikTok, or both) affect their mental health outcomes?
+Battery is meaningful but secondary
+- Correlation: r = 0.201
+- Flagship phones average 1,380 mAh vs. 1,117 mAh for budget phones
+- Real gap, but much smaller than RAM
 
-Which age group has the highest depression rate?
+Screen resolution ranks 3rd and 4th
+- Pixel width (r = 0.166) and pixel height (r = 0.149) together form the second-strongest signal
+- Higher price generally means a sharper display
 
-Are there differences in stress and anxiety between male and female teens?
+Connectivity features are noise
+- 4G, WiFi, Bluetooth, Dual SIM, and Touch Screen adoption rates are nearly flat across all four tiers (~49–55%)
+- These features do not distinguish expensive phones from cheap ones in this dataset
 
-Does spending more time on social media lead to higher stress and less sleep?
+Camera barely moves
+- Primary camera goes from 9.6 MP (budget) to 10.2 MP (flagship) — effectively flat
+- Front camera is similarly unchanged across tiers
 
-Does heavy screen time hurt academic performance?
+Clock speed is the most surprising finding
+- Correlation with price: **r = −0.007**
+- Budget phones average slightly faster clock speeds than flagship phones
+- Clock speed is essentially a noise variable in this dataset
