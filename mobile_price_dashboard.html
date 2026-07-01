@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mobile Phone Price Analysis — Donson Hoang</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:      #0f172a;
+  --surface: #1e293b;
+  --border:  #334155;
+  --text:    #f1f5f9;
+  --muted:   #64748b;
+  --teal:    #2dd4bf;
+  --sky:     #38bdf8;
+  --green:   #4ade80;
+  --amber:   #fbbf24;
+  --red:     #f87171;
+  --indigo:  #818cf8;
+  --orange:  #fb923c;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  padding-bottom: 60px;
+}
+
+header {
+  background: #0f172a;
+  border-bottom: 1px solid #1e293b;
+  padding: 32px 40px 28px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.author-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 10px;
+}
+
+.header-left h1 {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+  color: var(--text);
+}
+
+.title-accent { color: var(--sky); }
+
+.header-sub {
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: 8px;
+  max-width: 520px;
+  line-height: 1.5;
+}
+
+.header-meta { display: flex; gap: 24px; flex-shrink: 0; padding-top: 4px; }
+
+.meta-item { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+
+.meta-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+
+.meta-value { font-size: 13px; font-weight: 600; color: var(--text); }
+
+.container { max-width: 1240px; margin: 0 auto; padding: 0 32px; }
+
+section { margin-top: 36px; }
+
+h2.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #1e293b;
+}
+
+.about-banner {
+  margin-top: 28px;
+  background: #1e293b;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--teal);
+  border-radius: 10px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.about-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+
+.about-text { font-size: 13px; color: #94a3b8; line-height: 1.65; }
+
+/* KPI */
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+
+.kpi-card {
+  background: #1e293b;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 22px 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+}
+
+.kpi-card.teal::after  { background: var(--teal); }
+.kpi-card.amber::after { background: var(--amber); }
+.kpi-card.green::after { background: var(--green); }
+.kpi-card.sky::after   { background: var(--sky); }
+
+.kpi-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .9px; color: var(--muted); margin-bottom: 8px; }
+
+.kpi-value { font-size: 34px; font-weight: 800; line-height: 1; color: var(--text); }
+
+.kpi-sub { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+/* Charts */
+.charts-row { display: grid; gap: 14px; }
+.charts-row.two-col { grid-template-columns: 1fr 1fr; }
+.charts-row.big-small { grid-template-columns: 3fr 2fr; }
+.charts-row.three-col { grid-template-columns: 1fr 1fr 1fr; }
+
+.chart-card {
+  background: #1e293b;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 22px;
+}
+
+.chart-card h3 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+
+.chart-card p.subtitle { font-size: 12px; color: var(--muted); margin-bottom: 16px; line-height: 1.5; }
+
+.chart-wrap { position: relative; }
+
+/* Corr bars */
+.corr-list { display: flex; flex-direction: column; gap: 9px; }
+.corr-row  { display: flex; align-items: center; gap: 10px; }
+
+.corr-label { width: 88px; font-size: 12px; color: var(--text); text-align: right; flex-shrink: 0; }
+
+.corr-bar-bg { flex: 1; height: 6px; background: #334155; border-radius: 3px; overflow: hidden; }
+
+.corr-bar-fill { height: 100%; border-radius: 3px; }
+
+.corr-val { width: 40px; font-size: 11px; color: var(--muted); text-align: right; flex-shrink: 0; }
+
+/* Tier pills */
+.tier-pills { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+
+.tier-pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all .15s;
+}
+
+.tier-pill.t0  { background: rgba(74,222,128,.15); color: var(--green); border-color: rgba(74,222,128,.3); }
+.tier-pill.t1  { background: rgba(56,189,248,.15); color: var(--sky);   border-color: rgba(56,189,248,.3); }
+.tier-pill.t2  { background: rgba(251,191,36,.15);  color: var(--amber); border-color: rgba(251,191,36,.3); }
+.tier-pill.t3  { background: rgba(45,212,191,.15);  color: var(--teal);  border-color: rgba(45,212,191,.3); }
+.tier-pill.all { background: rgba(148,163,184,.15); color: #94a3b8;      border-color: rgba(148,163,184,.3); }
+
+.tier-pill.active.t0  { background: rgba(74,222,128,.3); }
+.tier-pill.active.t1  { background: rgba(56,189,248,.3); }
+.tier-pill.active.t2  { background: rgba(251,191,36,.3); }
+.tier-pill.active.t3  { background: rgba(45,212,191,.3); }
+.tier-pill.active.all { background: rgba(148,163,184,.3); }
+
+/* Stat table */
+.stat-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+
+.stat-table th {
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: var(--muted);
+  border-bottom: 1px solid #334155;
+}
+
+.stat-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid #1e293b;
+  color: #cbd5e1;
+}
+
+.stat-table tr:last-child td { border-bottom: none; }
+
+.stat-table tr:hover td { background: rgba(255,255,255,.03); }
+
+.tier-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+
+.t0-badge { background: rgba(74,222,128,.12); color: var(--green); }
+.t1-badge { background: rgba(56,189,248,.12); color: var(--sky); }
+.t2-badge { background: rgba(251,191,36,.12);  color: var(--amber); }
+.t3-badge { background: rgba(45,212,191,.12);  color: var(--teal); }
+
+/* Insights */
+.insight-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+
+.insight-card {
+  background: #1e293b;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.insight-icon { flex-shrink: 0; margin-top: 1px; }
+
+.ititle { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+
+.ibody { font-size: 12px; color: #94a3b8; line-height: 1.6; }
+
+/* Phone browser */
+.browser-controls { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+
+.search-box {
+  flex: 1; min-width: 200px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 9px 14px;
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+}
+.search-box::placeholder { color: var(--muted); }
+.search-box:focus { border-color: var(--teal); }
+
+.filter-select {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 9px 13px;
+  color: var(--text);
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+}
+.filter-select:focus { border-color: var(--teal); }
+
+.phone-count-label { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+
+.phone-list { display: flex; flex-direction: column; gap: 8px; }
+
+.phone-item {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: start;
+  transition: border-color .15s;
+}
+
+.phone-item:hover { border-color: var(--teal); }
+
+.phone-specs { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 6px; }
+
+.spec-chip {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.spec-chip strong { color: #cbd5e1; }
+
+.phone-flags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; justify-content: flex-end; }
+
+.flag {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.flag-on  { background: rgba(74,222,128,.12); color: var(--green); }
+.flag-off { background: rgba(100,116,139,.12); color: var(--muted); text-decoration: line-through; }
+
+.no-results { text-align: center; color: var(--muted); padding: 40px; font-size: 14px; }
+
+/* Footer */
+footer {
+  margin-top: 56px;
+  border-top: 1px solid #1e293b;
+  padding: 20px 40px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.footer-dot { color: #334155; }
+
+/* Responsive */
+@media (max-width: 960px) {
+  header { flex-direction: column; gap: 20px; }
+  .header-meta { flex-direction: row; justify-content: flex-start; }
+  .meta-item { align-items: flex-start; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .charts-row.two-col,
+  .charts-row.big-small,
+  .charts-row.three-col { grid-template-columns: 1fr; }
+  .insight-row { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 600px) {
+  header { padding: 24px 20px; }
+  .container { padding: 0 16px; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .insight-row { grid-template-columns: 1fr; }
+}
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-left">
+    <div class="author-tag">Donson Hoang &middot; Data Analyst</div>
+    <h1>Mobile Phone<span class="title-accent"> Price Analysis</span></h1>
+    <p class="header-sub">Exploring what hardware specs actually drive mobile phone pricing — RAM, battery, resolution, and more across 2,000 devices</p>
+  </div>
+  <div class="header-meta">
+    <div class="meta-item">
+      <span class="meta-label">Dataset</span>
+      <span class="meta-value">2,000 Phones</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Price Tiers</span>
+      <span class="meta-value">4 Categories</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Features</span>
+      <span class="meta-value">20 Specs</span>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ABOUT -->
+  <section class="about-banner">
+    <div class="about-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    </div>
+    <div class="about-text">
+      I used this mobile price classification dataset to investigate which hardware specs actually matter for pricing. After loading it into MySQL, I computed per-tier averages, feature adoption rates, and feature-to-price correlations. The biggest finding: RAM alone explains 91.7% of the price variation — everything else is secondary.
+    </div>
+  </section>
+
+  <!-- KPI CARDS -->
+  <section>
+    <h2 class="section-title">At a Glance</h2>
+    <div class="kpi-grid">
+      <div class="kpi-card teal">
+        <div class="kpi-label">Total Phones</div>
+        <div class="kpi-value">2,000</div>
+        <div class="kpi-sub">500 per price tier</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-label">RAM Correlation</div>
+        <div class="kpi-value">0.917</div>
+        <div class="kpi-sub">Strongest predictor</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Flagship Avg RAM</div>
+        <div class="kpi-value">3,449</div>
+        <div class="kpi-sub">vs 785 MB budget</div>
+      </div>
+      <div class="kpi-card sky">
+        <div class="kpi-label">Spec Features</div>
+        <div class="kpi-value">20</div>
+        <div class="kpi-sub">Hardware + connectivity</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RAM + CORRELATION -->
+  <section>
+    <h2 class="section-title">What Actually Drives Price</h2>
+    <div class="charts-row big-small">
+
+      <div class="chart-card">
+        <h3>Average RAM by Price Tier</h3>
+        <p class="subtitle">RAM has a 0.917 correlation with price — the single most dominant feature by far</p>
+        <div class="chart-wrap" style="height:220px;">
+          <canvas id="ramChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h3>Feature Correlation with Price</h3>
+        <p class="subtitle">After RAM, battery and screen resolution are next — everything else barely moves the needle</p>
+        <div class="corr-list" style="margin-top:4px;">
+          <div class="corr-row">
+            <div class="corr-label">RAM</div>
+            <div class="corr-bar-bg"><div class="corr-bar-fill" style="width:100%;background:#2dd4bf;"></div></div>
+            <div class="corr-val">0.917</div>
+          </div>
+          <div class="corr-row">
+            <div class="corr-label">Battery</div>
+            <div class="corr-bar-bg"><div class="corr-bar-fill" style="width:21.9%;background:#38bdf8;"></div></div>
+            <div class="corr-val">0.201</div>
+          </div>
+          <div class="corr-row">
+            <div class="corr-label">Px Width</div>
+            <div class="corr-bar-bg"><div class="corr-bar-fill" style="width:18.1%;background:#38bdf8;"></div></div>
+            <div class="corr-val">0.166</div>
+          </div>
+          <div class="corr-row">
+            <div class="corr-label">Px Height</div>
+            <div class="corr-bar-bg"><div class="corr-bar-fill" style="width:16.2%;background:#38bdf8;"></div></div>
+            <div class="corr-val">0.149</div>
+          </div>
+          <div class="corr-row">
+            <div class="corr-label">Int Memory</div>
+            <div class="corr-bar-bg"><div class="corr-bar-fill" style="width:4.8%;background:#64748b;"></div></div>
+            <div class="corr-val">0.044</div>
+          </div>
+          <div class="corr-row">
+            <div class="corr-label">Screen W</div>
+            <div class="corr-bar-bg"><div class="corr-bar-fill" style="width:4.3%;background:#64748b;"></div></div>
+            <div class="corr-val">0.039</div>
+          </div>
+          <div class="corr-row">
+            <div class="corr-label">Primary Cam</div>
+            <div class="corr-bar-bg"><div class="corr-bar-fill" style="width:3.7%;background:#64748b;"></div></div>
+            <div class="corr-val">0.034</div>
+          </div>
+          <div class="corr-row">
+            <div class="corr-label">4G</div>
+            <div class="corr-bar-bg"><div class="corr-bar-fill" style="width:1.6%;background:#64748b;"></div></div>
+            <div class="corr-val">0.015</div>
+          </div>
+          <div class="corr-row">
+            <div class="corr-label">Bluetooth</div>
+            <div class="corr-bar-bg"><div class="corr-bar-fill" style="width:2.3%;background:#64748b;"></div></div>
+            <div class="corr-val">0.021</div>
+          </div>
+          <div class="corr-row">
+            <div class="corr-label">Clock Speed</div>
+            <div class="corr-bar-bg"><div class="corr-bar-fill" style="width:0.8%;background:#f87171;"></div></div>
+            <div class="corr-val">-0.007</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BATTERY + TIER DISTRIBUTION -->
+  <section>
+    <h2 class="section-title">Battery & Distribution</h2>
+    <div class="charts-row two-col">
+
+      <div class="chart-card">
+        <h3>Average Battery Power by Tier</h3>
+        <p class="subtitle">Flagships have notably better battery (1,380 mAh) — the gap is real but smaller than RAM</p>
+        <div class="chart-wrap" style="height:200px;">
+          <canvas id="batteryChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h3>Price Tier Distribution</h3>
+        <p class="subtitle">Perfectly balanced — 500 phones in each tier, making this an ideal classification dataset</p>
+        <div class="chart-wrap" style="height:200px;">
+          <canvas id="tierChart"></canvas>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CONNECTIVITY FEATURES -->
+  <section>
+    <h2 class="section-title">Connectivity Features by Price Tier</h2>
+    <div class="chart-card">
+      <h3>Feature Adoption Rate Across Tiers (%)</h3>
+      <p class="subtitle">4G, Bluetooth, WiFi, and Dual SIM rates are nearly identical across all price tiers — they don't distinguish expensive phones from cheap ones</p>
+      <div class="chart-wrap" style="height:220px;">
+        <canvas id="featuresChart"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- SPEC COMPARISON TABLE -->
+  <section>
+    <h2 class="section-title">Hardware Specs Across Tiers</h2>
+    <div class="chart-card">
+      <h3>Average Specs by Price Range</h3>
+      <p class="subtitle">RAM climbs sharply with price; cameras, cores, and talk time barely budge</p>
+      <table class="stat-table">
+        <thead>
+          <tr>
+            <th>Price Tier</th>
+            <th>Avg RAM</th>
+            <th>Avg Battery</th>
+            <th>Avg Storage</th>
+            <th>Avg Cores</th>
+            <th>Primary Cam</th>
+            <th>Front Cam</th>
+            <th>Weight</th>
+            <th>Talk Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tier-badge t0-badge">Budget</span></td>
+            <td><strong>785 MB</strong></td>
+            <td>1,117 mAh</td>
+            <td>31.2 GB</td>
+            <td>4.6</td>
+            <td>9.6 MP</td>
+            <td>4.1 MP</td>
+            <td>140.6 g</td>
+            <td>10.6 h</td>
+          </tr>
+          <tr>
+            <td><span class="tier-badge t1-badge">Mid-Range</span></td>
+            <td><strong>1,679 MB</strong></td>
+            <td>1,229 mAh</td>
+            <td>32.1 GB</td>
+            <td>4.3</td>
+            <td>9.9 MP</td>
+            <td>4.3 MP</td>
+            <td>140.5 g</td>
+            <td>11.4 h</td>
+          </tr>
+          <tr>
+            <td><span class="tier-badge t2-badge">High-End</span></td>
+            <td><strong>2,583 MB</strong></td>
+            <td>1,228 mAh</td>
+            <td>30.9 GB</td>
+            <td>4.7</td>
+            <td>10.0 MP</td>
+            <td>4.5 MP</td>
+            <td>143.6 g</td>
+            <td>11.0 h</td>
+          </tr>
+          <tr>
+            <td><span class="tier-badge t3-badge">Flagship</span></td>
+            <td><strong>3,449 MB</strong></td>
+            <td>1,380 mAh</td>
+            <td>34.0 GB</td>
+            <td>4.5</td>
+            <td>10.2 MP</td>
+            <td>4.3 MP</td>
+            <td>136.3 g</td>
+            <td>11.1 h</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- INSIGHTS -->
+  <section>
+    <h2 class="section-title">What I Found</h2>
+    <div class="insight-row">
+      <div class="insight-card">
+        <div class="insight-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div class="insight-text">
+          <div class="ititle">RAM is everything</div>
+          <div class="ibody">With a 0.917 correlation, RAM alone is nearly a complete predictor of price tier. Budget phones average 785 MB; flagship phones average 3,449 MB — a 4.4× difference.</div>
+        </div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+        </div>
+        <div class="insight-text">
+          <div class="ititle">Battery matters, but less than you'd think</div>
+          <div class="ibody">Battery power comes in 2nd with a 0.201 correlation. Flagship phones average 1,380 mAh vs. 1,117 for budget — meaningful, but nothing like the RAM gap.</div>
+        </div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        </div>
+        <div class="insight-text">
+          <div class="ititle">Screen resolution is 3rd and 4th</div>
+          <div class="ibody">Pixel width (0.166) and height (0.149) together form the second-most predictive signal after RAM. Higher price = sharper display, on average.</div>
+        </div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        </div>
+        <div class="insight-text">
+          <div class="ititle">4G, WiFi, Bluetooth don't predict price</div>
+          <div class="ibody">All connectivity features show near-zero correlation with price (0.015–0.021). Budget and flagship phones have virtually the same 4G adoption rate (~52%).</div>
+        </div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/><polyline points="16 2 22 2 22 8"/></svg>
+        </div>
+        <div class="insight-text">
+          <div class="ititle">Cameras barely differentiate tiers</div>
+          <div class="ibody">Primary camera only goes from 9.6 MP (budget) to 10.2 MP (flagship). Front camera is similarly flat. Camera spec is not how price tiers are set in this dataset.</div>
+        </div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <div class="insight-text">
+          <div class="ititle">Clock speed is a noise variable</div>
+          <div class="ibody">Clock speed has a -0.007 correlation with price — essentially random. Faster CPUs don't reliably appear in more expensive tiers, which is a surprising data insight.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PHONE EXPLORER -->
+  <section>
+    <h2 class="section-title">Phone Explorer</h2>
+    <div class="chart-card">
+      <h3>Browse the Sample</h3>
+      <p class="subtitle">100-phone sample, 25 per tier — filter by tier or search by specs</p>
+      <div class="browser-controls">
+        <input class="search-box" id="phoneSearch" type="text" placeholder="Search RAM, battery, features..." oninput="renderPhones()" />
+        <select class="filter-select" id="tierFilter" onchange="renderPhones()">
+          <option value="">All Tiers</option>
+          <option value="0">Budget</option>
+          <option value="1">Mid-Range</option>
+          <option value="2">High-End</option>
+          <option value="3">Flagship</option>
+        </select>
+        <select class="filter-select" id="sortFilter" onchange="renderPhones()">
+          <option value="ram-desc">RAM: High to Low</option>
+          <option value="ram-asc">RAM: Low to High</option>
+          <option value="battery-desc">Battery: High to Low</option>
+          <option value="tier-asc">Tier: Budget first</option>
+          <option value="tier-desc">Tier: Flagship first</option>
+        </select>
+      </div>
+      <div class="phone-count-label" id="phoneCountLabel"></div>
+      <div class="phone-list" id="phoneList"></div>
+    </div>
+  </section>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <span>Donson Hoang</span>
+  <span class="footer-dot">&middot;</span>
+  <span>donsonhoang@gmail.com</span>
+  <span class="footer-dot">&middot;</span>
+  <span>Mobile Price Classification Dataset &mdash; 2,000 phones, 20 features</span>
+</footer>
+
+<script>
+const TIER_LABELS = ['Budget','Mid-Range','High-End','Flagship'];
+const TIER_COLORS = ['#4ade80','#38bdf8','#fbbf24','#2dd4bf'];
+const TIER_BG     = ['rgba(74,222,128,.2)','rgba(56,189,248,.2)','rgba(251,191,36,.2)','rgba(45,212,191,.2)'];
+
+// ── Charts ──────────────────────────────────────────────
+const chartDefaults = {
+  plugins: { legend: { labels: { color:'#94a3b8', font:{ size:11 } } } },
+  scales: {
+    x: { ticks:{ color:'#64748b', font:{size:11} }, grid:{ color:'rgba(255,255,255,.04)' } },
+    y: { ticks:{ color:'#64748b', font:{size:11} }, grid:{ color:'rgba(255,255,255,.07)' } }
+  }
+};
+
+// RAM Chart
+new Chart(document.getElementById('ramChart'), {
+  type: 'bar',
+  data: {
+    labels: TIER_LABELS,
+    datasets: [{
+      label: 'Average RAM (MB)',
+      data: [785, 1679, 2583, 3449],
+      backgroundColor: TIER_BG,
+      borderColor: TIER_COLORS,
+      borderWidth: 2,
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    ...chartDefaults,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks:{ color:'#64748b', font:{size:11} }, grid:{ color:'rgba(255,255,255,.04)' } },
+      y: {
+        ticks:{ color:'#64748b', font:{size:11}, callback: v => v.toLocaleString() + ' MB' },
+        grid:{ color:'rgba(255,255,255,.07)' },
+        beginAtZero: true
+      }
+    }
+  }
+});
+
+// Battery Chart
+new Chart(document.getElementById('batteryChart'), {
+  type: 'bar',
+  data: {
+    labels: TIER_LABELS,
+    datasets: [{
+      label: 'Average Battery (mAh)',
+      data: [1117, 1229, 1228, 1380],
+      backgroundColor: TIER_BG,
+      borderColor: TIER_COLORS,
+      borderWidth: 2,
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    ...chartDefaults,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks:{ color:'#64748b', font:{size:11} }, grid:{ color:'rgba(255,255,255,.04)' } },
+      y: {
+        ticks:{ color:'#64748b', font:{size:11}, callback: v => v.toLocaleString() + ' mAh' },
+        grid:{ color:'rgba(255,255,255,.07)' },
+        min: 900
+      }
+    }
+  }
+});
+
+// Tier donut
+new Chart(document.getElementById('tierChart'), {
+  type: 'doughnut',
+  data: {
+    labels: TIER_LABELS,
+    datasets: [{
+      data: [500, 500, 500, 500],
+      backgroundColor: TIER_BG,
+      borderColor: TIER_COLORS,
+      borderWidth: 2
+    }]
+  },
+  options: {
+    plugins: {
+      legend: { position:'right', labels:{ color:'#94a3b8', font:{size:11}, padding:14 } }
+    },
+    cutout: '62%'
+  }
+});
+
+// Features grouped bar
+new Chart(document.getElementById('featuresChart'), {
+  type: 'bar',
+  data: {
+    labels: ['4G','3G','Bluetooth','Wi-Fi','Dual SIM','Touch Screen'],
+    datasets: [
+      { label:'Budget',    data:[51.8,74.6,48.6,49.6,50.0,52.4], backgroundColor:'rgba(74,222,128,.25)',  borderColor:'#4ade80', borderWidth:1.5, borderRadius:3 },
+      { label:'Mid-Range', data:[52.4,75.6,49.0,50.4,51.0,52.2], backgroundColor:'rgba(56,189,248,.25)',  borderColor:'#38bdf8', borderWidth:1.5, borderRadius:3 },
+      { label:'High-End',  data:[49.4,77.4,48.6,50.4,49.8,47.0], backgroundColor:'rgba(251,191,36,.25)',  borderColor:'#fbbf24', borderWidth:1.5, borderRadius:3 },
+      { label:'Flagship',  data:[55.0,77.0,51.8,52.4,53.0,49.6], backgroundColor:'rgba(45,212,191,.25)',  borderColor:'#2dd4bf', borderWidth:1.5, borderRadius:3 },
+    ]
+  },
+  options: {
+    ...chartDefaults,
+    plugins: { legend: { labels:{ color:'#94a3b8', font:{size:11} } } },
+    scales: {
+      x: { ticks:{ color:'#64748b', font:{size:11} }, grid:{ color:'rgba(255,255,255,.04)' } },
+      y: {
+        ticks:{ color:'#64748b', font:{size:11}, callback: v => v + '%' },
+        grid:{ color:'rgba(255,255,255,.07)' },
+        min: 30, max: 100
+      }
+    }
+  }
+});
+
+// ── Phone Explorer ────────────────────────────────────────
+const PHONES = [{"battery": 882, "ram": 751, "memory": 28, "cores": 6, "pc": 16, "fc": 9, "weight": 151, "talk": 8, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 1, "dual_sim": 1, "touch": 0, "clock": 0.7, "tier": 0, "tier_label": "Budget"}, {"battery": 564, "ram": 1074, "memory": 51, "cores": 3, "pc": 1, "fc": 0, "weight": 168, "talk": 15, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 0, "dual_sim": 1, "touch": 1, "clock": 1.8, "tier": 0, "tier_label": "Budget"}, {"battery": 799, "ram": 431, "memory": 63, "cores": 8, "pc": 6, "fc": 1, "weight": 144, "talk": 6, "four_g": 1, "three_g": 1, "blue": 1, "wifi": 1, "dual_sim": 0, "touch": 1, "clock": 2.3, "tier": 0, "tier_label": "Budget"}, {"battery": 571, "ram": 555, "memory": 58, "cores": 6, "pc": 11, "fc": 5, "weight": 101, "talk": 11, "four_g": 1, "three_g": 1, "blue": 1, "wifi": 1, "dual_sim": 1, "touch": 0, "clock": 2.0, "tier": 0, "tier_label": "Budget"}, {"battery": 1430, "ram": 752, "memory": 56, "cores": 3, "pc": 5, "fc": 3, "weight": 179, "talk": 17, "four_g": 0, "three_g": 0, "blue": 1, "wifi": 1, "dual_sim": 0, "touch": 0, "clock": 0.9, "tier": 0, "tier_label": "Budget"}, {"battery": 1271, "ram": 445, "memory": 32, "cores": 7, "pc": 15, "fc": 12, "weight": 113, "talk": 14, "four_g": 0, "three_g": 0, "blue": 1, "wifi": 1, "dual_sim": 0, "touch": 0, "clock": 0.5, "tier": 0, "tier_label": "Budget"}, {"battery": 1438, "ram": 869, "memory": 32, "cores": 7, "pc": 6, "fc": 0, "weight": 176, "talk": 9, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 1, "dual_sim": 0, "touch": 1, "clock": 2.2, "tier": 0, "tier_label": "Budget"}, {"battery": 1170, "ram": 715, "memory": 14, "cores": 2, "pc": 13, "fc": 6, "weight": 199, "talk": 20, "four_g": 1, "three_g": 1, "blue": 1, "wifi": 1, "dual_sim": 0, "touch": 0, "clock": 0.9, "tier": 0, "tier_label": "Budget"}, {"battery": 595, "ram": 1593, "memory": 20, "cores": 2, "pc": 18, "fc": 0, "weight": 122, "talk": 2, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 1, "dual_sim": 0, "touch": 0, "clock": 2.6, "tier": 0, "tier_label": "Budget"}, {"battery": 862, "ram": 278, "memory": 23, "cores": 2, "pc": 15, "fc": 3, "weight": 165, "talk": 11, "four_g": 0, "three_g": 0, "blue": 1, "wifi": 1, "dual_sim": 1, "touch": 0, "clock": 0.8, "tier": 0, "tier_label": "Budget"}, {"battery": 950, "ram": 1305, "memory": 55, "cores": 8, "pc": 7, "fc": 6, "weight": 124, "talk": 4, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 1, "dual_sim": 0, "touch": 0, "clock": 0.5, "tier": 0, "tier_label": "Budget"}, {"battery": 1571, "ram": 586, "memory": 30, "cores": 7, "pc": 3, "fc": 1, "weight": 150, "talk": 4, "four_g": 0, "three_g": 0, "blue": 0, "wifi": 1, "dual_sim": 0, "touch": 1, "clock": 2.9, "tier": 0, "tier_label": "Budget"}, {"battery": 921, "ram": 1080, "memory": 60, "cores": 2, "pc": 3, "fc": 1, "weight": 83, "talk": 6, "four_g": 0, "three_g": 0, "blue": 0, "wifi": 1, "dual_sim": 1, "touch": 0, "clock": 0.6, "tier": 0, "tier_label": "Budget"}, {"battery": 1049, "ram": 1022, "memory": 63, "cores": 5, "pc": 17, "fc": 9, "weight": 135, "talk": 13, "four_g": 0, "three_g": 0, "blue": 1, "wifi": 0, "dual_sim": 0, "touch": 0, "clock": 2.2, "tier": 0, "tier_label": "Budget"}, {"battery": 717, "ram": 688, "memory": 10, "cores": 1, "pc": 5, "fc": 4, "weight": 198, "talk": 15, "four_g": 0, "three_g": 0, "blue": 1, "wifi": 0, "dual_sim": 1, "touch": 1, "clock": 0.5, "tier": 0, "tier_label": "Budget"}, {"battery": 1062, "ram": 911, "memory": 45, "cores": 3, "pc": 4, "fc": 3, "weight": 151, "talk": 9, "four_g": 0, "three_g": 0, "blue": 0, "wifi": 0, "dual_sim": 0, "touch": 0, "clock": 1.5, "tier": 0, "tier_label": "Budget"}, {"battery": 797, "ram": 590, "memory": 38, "cores": 4, "pc": 6, "fc": 4, "weight": 90, "talk": 6, "four_g": 0, "three_g": 0, "blue": 1, "wifi": 0, "dual_sim": 1, "touch": 1, "clock": 2.9, "tier": 0, "tier_label": "Budget"}, {"battery": 605, "ram": 392, "memory": 9, "cores": 3, "pc": 16, "fc": 8, "weight": 142, "talk": 4, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 0, "dual_sim": 0, "touch": 0, "clock": 1.0, "tier": 0, "tier_label": "Budget"}, {"battery": 850, "ram": 593, "memory": 29, "cores": 5, "pc": 19, "fc": 6, "weight": 133, "talk": 10, "four_g": 1, "three_g": 1, "blue": 1, "wifi": 1, "dual_sim": 1, "touch": 0, "clock": 1.6, "tier": 0, "tier_label": "Budget"}, {"battery": 685, "ram": 1223, "memory": 17, "cores": 6, "pc": 20, "fc": 7, "weight": 174, "talk": 18, "four_g": 0, "three_g": 1, "blue": 0, "wifi": 1, "dual_sim": 0, "touch": 0, "clock": 2.7, "tier": 0, "tier_label": "Budget"}, {"battery": 577, "ram": 814, "memory": 37, "cores": 6, "pc": 20, "fc": 8, "weight": 161, "talk": 19, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 1, "dual_sim": 0, "touch": 1, "clock": 2.4, "tier": 0, "tier_label": "Budget"}, {"battery": 1948, "ram": 816, "memory": 18, "cores": 2, "pc": 14, "fc": 5, "weight": 135, "talk": 3, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 0, "dual_sim": 1, "touch": 0, "clock": 2.8, "tier": 0, "tier_label": "Budget"}, {"battery": 712, "ram": 401, "memory": 49, "cores": 6, "pc": 3, "fc": 1, "weight": 99, "talk": 10, "four_g": 0, "three_g": 1, "blue": 0, "wifi": 1, "dual_sim": 1, "touch": 0, "clock": 2.5, "tier": 0, "tier_label": "Budget"}, {"battery": 1156, "ram": 470, "memory": 50, "cores": 2, "pc": 0, "fc": 0, "weight": 159, "talk": 15, "four_g": 1, "three_g": 1, "blue": 1, "wifi": 0, "dual_sim": 1, "touch": 1, "clock": 1.2, "tier": 0, "tier_label": "Budget"}, {"battery": 1100, "ram": 757, "memory": 15, "cores": 8, "pc": 14, "fc": 12, "weight": 112, "talk": 16, "four_g": 0, "three_g": 1, "blue": 1, "wifi": 1, "dual_sim": 0, "touch": 1, "clock": 1.6, "tier": 0, "tier_label": "Budget"}, {"battery": 1483, "ram": 1851, "memory": 54, "cores": 7, "pc": 2, "fc": 1, "weight": 176, "talk": 2, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 0, "dual_sim": 0, "touch": 1, "clock": 2.1, "tier": 1, "tier_label": "Mid-Range"}, {"battery": 603, "ram": 1543, "memory": 12, "cores": 6, "pc": 20, "fc": 8, "weight": 114, "talk": 19, "four_g": 0, "three_g": 1, "blue": 0, "wifi": 0, "dual_sim": 0, "touch": 1, "clock": 1.5, "tier": 1, "tier_label": "Mid-Range"}, {"battery": 1318, "ram": 1780, "memory": 11, "cores": 2, "pc": 15, "fc": 0, "weight": 188, "talk": 2, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 0, "dual_sim": 1, "touch": 0, "clock": 1.9, "tier": 1, "tier_label": "Mid-Range"}, {"battery": 1368, "ram": 1590, "memory": 42, "cores": 1, "pc": 20, "fc": 10, "weight": 91, "talk": 14, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 0, "dual_sim": 0, "touch": 0, "clock": 0.5, "tier": 1, "tier_label": "Mid-Range"}, {"battery": 618, "ram": 2399, "memory": 57, "cores": 3, "pc": 7, "fc": 2, "weight": 88, "talk": 17, "four_g": 1, "three_g": 1, "blue": 1, "wifi": 1, "dual_sim": 1, "touch": 1, "clock": 0.5, "tier": 1, "tier_label": "Mid-Range"}, {"battery": 1496, "ram": 1927, "memory": 38, "cores": 4, "pc": 14, "fc": 13, "weight": 126, "talk": 6, "four_g": 0, "three_g": 0, "blue": 1, "wifi": 1, "dual_sim": 1, "touch": 0, "clock": 1.9, "tier": 1, "tier_label": "Mid-Range"}, {"battery": 972, "ram": 1900, "memory": 54, "cores": 3, "pc": 4, "fc": 0, "weight": 107, "talk": 19, "four_g": 1, "three_g": 1, "blue": 1, "wifi": 1, "dual_sim": 0, "touch": 0, "clock": 1.7, "tier": 1, "tier_label": "Mid-Range"}, {"battery": 1175, "ram": 1944, "memory": 19, "cores": 7, "pc": 9, "fc": 2, "weight": 164, "talk": 9, "four_g": 0, "three_g": 1, "blue": 1, "wifi": 0, "dual_sim": 0, "touch": 1, "clock": 1.3, "tier": 1, "tier_label": "Mid-Range"}, {"battery": 627, "ram": 2476, "memory": 12, "cores": 7, "pc": 17, "fc": 3, "weight": 131, "talk": 10, "four_g": 1, "three_g": 1, "blue": 1, "wifi": 0, "dual_sim": 1, "touch": 0, "clock": 1.6, "tier": 1, "tier_label": "Mid-Range"}, {"battery": 1263, "ram": 1183, "memory": 64, "cores": 5, "pc": 18, "fc": 12, "weight": 175, "talk": 17, "four_g": 0, "three_g": 0, "blue": 0, "wifi": 1, "dual_sim": 0, "touch": 0, "clock": 0.5, "tier": 1, "tier_label": "Mid-Range"}, {"battery": 1150, "ram": 1610, "memory": 27, "cores": 1, "pc": 17, "fc": 4, "weight": 134, "talk": 16, "four_g": 1, "three_g": 1, "blue": 1, "wifi": 0, "dual_sim": 1, "touch": 0, "clock": 0.5, "tier": 1, "tier_label": "Mid-Range"}, {"battery": 1424, "ram": 1053, "memory": 23, "cores": 4, "pc": 18, "fc": 16, "weight": 80, "talk": 16, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 1, "dual_sim": 1, "touch": 1, "clock": 0.5, "tier": 1, "tier_label": "Mid-Range"}, {"battery": 1815, "ram": 1482, "memory": 33, "cores": 4, "pc": 17, "fc": 2, "weight": 159, "talk": 2, "four_g": 0, "three_g": 1, "blue": 0, "wifi": 0, "dual_sim": 0, "touch": 0, "clock": 2.8, "tier": 1, "tier_label": "Mid-Range"}, {"battery": 1957, "ram": 1115, "memory": 36, "cores": 2, "pc": 19, "fc": 18, "weight": 151, "talk": 18, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 1, "dual_sim": 1, "touch": 0, "clock": 1.2, "tier": 1, "tier_label": "Mid-Range"}, {"battery": 1307, "ram": 1412, "memory": 7, "cores": 7, "pc": 3, "fc": 2, "weight": 88, "talk": 5, "four_g": 0, "three_g": 0, "blue": 0, "wifi": 1, "dual_sim": 0, "touch": 0, "clock": 1.8, "tier": 1, "tier_label": "Mid-Range"}, {"battery": 662, "ram": 2125, "memory": 20, "cores": 1, "pc": 10, "fc": 5, "weight": 138, "talk": 15, "four_g": 0, "three_g": 0, "blue": 0, "wifi": 1, "dual_sim": 0, "touch": 1, "clock": 0.5, "tier": 1, "tier_label": "Mid-Range"}, {"battery": 867, "ram": 2157, "memory": 57, "cores": 4, "pc": 0, "fc": 0, "weight": 159, "talk": 18, "four_g": 1, "three_g": 1, "blue": 1, "wifi": 0, "dual_sim": 0, "touch": 0, "clock": 1.5, "tier": 1, "tier_label": "Mid-Range"}, {"battery": 1428, "ram": 1808, "memory": 7, "cores": 4, "pc": 2, "fc": 0, "weight": 153, "talk": 13, "four_g": 0, "three_g": 0, "blue": 1, "wifi": 0, "dual_sim": 0, "touch": 1, "clock": 1.6, "tier": 1, "tier_label": "Mid-Range"}, {"battery": 1068, "ram": 1803, "memory": 37, "cores": 7, "pc": 13, "fc": 1, "weight": 184, "talk": 7, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 0, "dual_sim": 1, "touch": 0, "clock": 2.0, "tier": 1, "tier_label": "Mid-Range"}, {"battery": 1995, "ram": 1322, "memory": 26, "cores": 1, "pc": 15, "fc": 6, "weight": 129, "talk": 7, "four_g": 0, "three_g": 0, "blue": 1, "wifi": 1, "dual_sim": 0, "touch": 1, "clock": 0.5, "tier": 1, "tier_label": "Mid-Range"}, {"battery": 1844, "ram": 1724, "memory": 51, "cores": 8, "pc": 3, "fc": 1, "weight": 158, "talk": 14, "four_g": 0, "three_g": 0, "blue": 1, "wifi": 1, "dual_sim": 1, "touch": 1, "clock": 2.3, "tier": 1, "tier_label": "Mid-Range"}, {"battery": 538, "ram": 2215, "memory": 25, "cores": 7, "pc": 7, "fc": 0, "weight": 163, "talk": 17, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 1, "dual_sim": 1, "touch": 1, "clock": 1.1, "tier": 1, "tier_label": "Mid-Range"}, {"battery": 940, "ram": 2192, "memory": 16, "cores": 4, "pc": 1, "fc": 0, "weight": 115, "talk": 9, "four_g": 0, "three_g": 1, "blue": 0, "wifi": 1, "dual_sim": 0, "touch": 1, "clock": 2.9, "tier": 1, "tier_label": "Mid-Range"}, {"battery": 817, "ram": 2039, "memory": 11, "cores": 3, "pc": 11, "fc": 0, "weight": 144, "talk": 19, "four_g": 0, "three_g": 0, "blue": 0, "wifi": 0, "dual_sim": 0, "touch": 1, "clock": 1.3, "tier": 1, "tier_label": "Mid-Range"}, {"battery": 1886, "ram": 1179, "memory": 24, "cores": 3, "pc": 1, "fc": 0, "weight": 112, "talk": 20, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 1, "dual_sim": 0, "touch": 0, "clock": 0.5, "tier": 1, "tier_label": "Mid-Range"}, {"battery": 1526, "ram": 2227, "memory": 23, "cores": 7, "pc": 8, "fc": 1, "weight": 117, "talk": 3, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 0, "dual_sim": 0, "touch": 1, "clock": 2.1, "tier": 2, "tier_label": "High-End"}, {"battery": 1853, "ram": 1973, "memory": 27, "cores": 6, "pc": 13, "fc": 1, "weight": 197, "talk": 8, "four_g": 0, "three_g": 1, "blue": 0, "wifi": 1, "dual_sim": 1, "touch": 0, "clock": 0.5, "tier": 2, "tier_label": "High-End"}, {"battery": 671, "ram": 2504, "memory": 30, "cores": 7, "pc": 17, "fc": 10, "weight": 105, "talk": 15, "four_g": 0, "three_g": 1, "blue": 0, "wifi": 0, "dual_sim": 1, "touch": 0, "clock": 0.9, "tier": 2, "tier_label": "High-End"}, {"battery": 1536, "ram": 2020, "memory": 13, "cores": 7, "pc": 20, "fc": 12, "weight": 105, "talk": 16, "four_g": 0, "three_g": 1, "blue": 0, "wifi": 0, "dual_sim": 0, "touch": 1, "clock": 0.8, "tier": 2, "tier_label": "High-End"}, {"battery": 1698, "ram": 2992, "memory": 7, "cores": 8, "pc": 12, "fc": 10, "weight": 131, "talk": 17, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 0, "dual_sim": 0, "touch": 1, "clock": 2.8, "tier": 2, "tier_label": "High-End"}, {"battery": 1567, "ram": 2312, "memory": 22, "cores": 6, "pc": 6, "fc": 3, "weight": 119, "talk": 18, "four_g": 0, "three_g": 1, "blue": 0, "wifi": 0, "dual_sim": 1, "touch": 0, "clock": 0.5, "tier": 2, "tier_label": "High-End"}, {"battery": 805, "ram": 3397, "memory": 58, "cores": 3, "pc": 10, "fc": 0, "weight": 168, "talk": 2, "four_g": 1, "three_g": 1, "blue": 1, "wifi": 0, "dual_sim": 1, "touch": 0, "clock": 1.7, "tier": 2, "tier_label": "High-End"}, {"battery": 704, "ram": 3653, "memory": 53, "cores": 6, "pc": 6, "fc": 4, "weight": 186, "talk": 15, "four_g": 0, "three_g": 1, "blue": 0, "wifi": 1, "dual_sim": 1, "touch": 1, "clock": 2.2, "tier": 2, "tier_label": "High-End"}, {"battery": 999, "ram": 3083, "memory": 56, "cores": 4, "pc": 13, "fc": 11, "weight": 165, "talk": 11, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 1, "dual_sim": 1, "touch": 1, "clock": 2.6, "tier": 2, "tier_label": "High-End"}, {"battery": 1310, "ram": 3182, "memory": 7, "cores": 5, "pc": 14, "fc": 13, "weight": 194, "talk": 5, "four_g": 0, "three_g": 1, "blue": 1, "wifi": 0, "dual_sim": 1, "touch": 1, "clock": 1.1, "tier": 2, "tier_label": "High-End"}, {"battery": 1742, "ram": 1921, "memory": 43, "cores": 3, "pc": 7, "fc": 5, "weight": 176, "talk": 3, "four_g": 1, "three_g": 1, "blue": 1, "wifi": 0, "dual_sim": 1, "touch": 1, "clock": 0.5, "tier": 2, "tier_label": "High-End"}, {"battery": 1966, "ram": 1252, "memory": 48, "cores": 1, "pc": 16, "fc": 15, "weight": 144, "talk": 19, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 1, "dual_sim": 1, "touch": 1, "clock": 0.8, "tier": 2, "tier_label": "High-End"}, {"battery": 618, "ram": 2574, "memory": 63, "cores": 2, "pc": 1, "fc": 0, "weight": 138, "talk": 5, "four_g": 1, "three_g": 1, "blue": 1, "wifi": 0, "dual_sim": 1, "touch": 1, "clock": 2.2, "tier": 2, "tier_label": "High-End"}, {"battery": 893, "ram": 2986, "memory": 55, "cores": 2, "pc": 1, "fc": 0, "weight": 183, "talk": 6, "four_g": 0, "three_g": 0, "blue": 0, "wifi": 1, "dual_sim": 1, "touch": 1, "clock": 2.5, "tier": 2, "tier_label": "High-End"}, {"battery": 1262, "ram": 3248, "memory": 34, "cores": 5, "pc": 16, "fc": 12, "weight": 149, "talk": 4, "four_g": 0, "three_g": 0, "blue": 0, "wifi": 1, "dual_sim": 1, "touch": 1, "clock": 1.8, "tier": 2, "tier_label": "High-End"}, {"battery": 1083, "ram": 3248, "memory": 39, "cores": 8, "pc": 2, "fc": 1, "weight": 173, "talk": 6, "four_g": 1, "three_g": 1, "blue": 1, "wifi": 1, "dual_sim": 1, "touch": 0, "clock": 2.9, "tier": 2, "tier_label": "High-End"}, {"battery": 1872, "ram": 2295, "memory": 16, "cores": 2, "pc": 2, "fc": 0, "weight": 80, "talk": 16, "four_g": 0, "three_g": 0, "blue": 1, "wifi": 1, "dual_sim": 1, "touch": 0, "clock": 0.9, "tier": 2, "tier_label": "High-End"}, {"battery": 1577, "ram": 2060, "memory": 42, "cores": 5, "pc": 4, "fc": 0, "weight": 197, "talk": 12, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 0, "dual_sim": 1, "touch": 0, "clock": 0.5, "tier": 2, "tier_label": "High-End"}, {"battery": 802, "ram": 3063, "memory": 43, "cores": 5, "pc": 6, "fc": 3, "weight": 153, "talk": 4, "four_g": 0, "three_g": 0, "blue": 0, "wifi": 0, "dual_sim": 1, "touch": 1, "clock": 0.5, "tier": 2, "tier_label": "High-End"}, {"battery": 1878, "ram": 2711, "memory": 56, "cores": 5, "pc": 13, "fc": 5, "weight": 139, "talk": 3, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 1, "dual_sim": 1, "touch": 1, "clock": 1.5, "tier": 2, "tier_label": "High-End"}, {"battery": 1826, "ram": 1612, "memory": 49, "cores": 8, "pc": 6, "fc": 5, "weight": 172, "talk": 17, "four_g": 1, "three_g": 1, "blue": 1, "wifi": 0, "dual_sim": 1, "touch": 1, "clock": 0.5, "tier": 2, "tier_label": "High-End"}, {"battery": 1221, "ram": 2638, "memory": 35, "cores": 7, "pc": 19, "fc": 7, "weight": 152, "talk": 14, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 1, "dual_sim": 0, "touch": 1, "clock": 2.3, "tier": 2, "tier_label": "High-End"}, {"battery": 1426, "ram": 2562, "memory": 55, "cores": 1, "pc": 7, "fc": 2, "weight": 109, "talk": 3, "four_g": 1, "three_g": 1, "blue": 1, "wifi": 0, "dual_sim": 0, "touch": 0, "clock": 2.5, "tier": 2, "tier_label": "High-End"}, {"battery": 1072, "ram": 2715, "memory": 19, "cores": 8, "pc": 16, "fc": 6, "weight": 114, "talk": 16, "four_g": 0, "three_g": 0, "blue": 1, "wifi": 0, "dual_sim": 1, "touch": 1, "clock": 2.2, "tier": 2, "tier_label": "High-End"}, {"battery": 681, "ram": 2548, "memory": 17, "cores": 5, "pc": 19, "fc": 12, "weight": 194, "talk": 5, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 1, "dual_sim": 1, "touch": 0, "clock": 0.5, "tier": 2, "tier_label": "High-End"}, {"battery": 1348, "ram": 3914, "memory": 43, "cores": 5, "pc": 6, "fc": 0, "weight": 116, "talk": 8, "four_g": 0, "three_g": 1, "blue": 0, "wifi": 1, "dual_sim": 0, "touch": 0, "clock": 1.3, "tier": 3, "tier_label": "Flagship"}, {"battery": 808, "ram": 3431, "memory": 45, "cores": 1, "pc": 9, "fc": 3, "weight": 161, "talk": 13, "four_g": 0, "three_g": 0, "blue": 0, "wifi": 1, "dual_sim": 0, "touch": 1, "clock": 2.3, "tier": 3, "tier_label": "Flagship"}, {"battery": 1960, "ram": 3865, "memory": 61, "cores": 7, "pc": 3, "fc": 1, "weight": 86, "talk": 11, "four_g": 1, "three_g": 1, "blue": 1, "wifi": 0, "dual_sim": 1, "touch": 0, "clock": 2.3, "tier": 3, "tier_label": "Flagship"}, {"battery": 1924, "ram": 3423, "memory": 63, "cores": 2, "pc": 10, "fc": 3, "weight": 111, "talk": 19, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 0, "dual_sim": 0, "touch": 0, "clock": 0.5, "tier": 3, "tier_label": "Flagship"}, {"battery": 1900, "ram": 2871, "memory": 18, "cores": 7, "pc": 9, "fc": 1, "weight": 89, "talk": 13, "four_g": 1, "three_g": 1, "blue": 1, "wifi": 1, "dual_sim": 0, "touch": 1, "clock": 2.3, "tier": 3, "tier_label": "Flagship"}, {"battery": 1199, "ram": 3448, "memory": 16, "cores": 4, "pc": 20, "fc": 15, "weight": 116, "talk": 10, "four_g": 1, "three_g": 1, "blue": 1, "wifi": 1, "dual_sim": 1, "touch": 0, "clock": 2.5, "tier": 3, "tier_label": "Flagship"}, {"battery": 664, "ram": 3774, "memory": 6, "cores": 2, "pc": 19, "fc": 5, "weight": 164, "talk": 18, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 0, "dual_sim": 0, "touch": 0, "clock": 1.5, "tier": 3, "tier_label": "Flagship"}, {"battery": 1454, "ram": 3419, "memory": 34, "cores": 4, "pc": 3, "fc": 1, "weight": 83, "talk": 5, "four_g": 0, "three_g": 1, "blue": 1, "wifi": 0, "dual_sim": 1, "touch": 1, "clock": 0.5, "tier": 3, "tier_label": "Flagship"}, {"battery": 1628, "ram": 3358, "memory": 56, "cores": 2, "pc": 13, "fc": 11, "weight": 136, "talk": 12, "four_g": 0, "three_g": 1, "blue": 1, "wifi": 1, "dual_sim": 1, "touch": 1, "clock": 1.8, "tier": 3, "tier_label": "Flagship"}, {"battery": 1748, "ram": 3968, "memory": 14, "cores": 3, "pc": 7, "fc": 6, "weight": 146, "talk": 3, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 1, "dual_sim": 1, "touch": 0, "clock": 1.7, "tier": 3, "tier_label": "Flagship"}, {"battery": 1957, "ram": 3801, "memory": 31, "cores": 3, "pc": 16, "fc": 11, "weight": 181, "talk": 7, "four_g": 0, "three_g": 1, "blue": 0, "wifi": 1, "dual_sim": 1, "touch": 0, "clock": 0.9, "tier": 3, "tier_label": "Flagship"}, {"battery": 753, "ram": 3484, "memory": 48, "cores": 8, "pc": 20, "fc": 11, "weight": 121, "talk": 16, "four_g": 1, "three_g": 1, "blue": 1, "wifi": 0, "dual_sim": 0, "touch": 0, "clock": 0.5, "tier": 3, "tier_label": "Flagship"}, {"battery": 707, "ram": 3838, "memory": 25, "cores": 3, "pc": 17, "fc": 2, "weight": 131, "talk": 7, "four_g": 0, "three_g": 1, "blue": 0, "wifi": 1, "dual_sim": 1, "touch": 0, "clock": 2.1, "tier": 3, "tier_label": "Flagship"}, {"battery": 1020, "ram": 3204, "memory": 27, "cores": 4, "pc": 4, "fc": 3, "weight": 128, "talk": 9, "four_g": 1, "three_g": 1, "blue": 1, "wifi": 1, "dual_sim": 1, "touch": 0, "clock": 0.7, "tier": 3, "tier_label": "Flagship"}, {"battery": 534, "ram": 3926, "memory": 16, "cores": 5, "pc": 1, "fc": 0, "weight": 189, "talk": 20, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 0, "dual_sim": 1, "touch": 0, "clock": 0.5, "tier": 3, "tier_label": "Flagship"}, {"battery": 1702, "ram": 2501, "memory": 52, "cores": 2, "pc": 15, "fc": 12, "weight": 145, "talk": 4, "four_g": 1, "three_g": 1, "blue": 1, "wifi": 0, "dual_sim": 0, "touch": 0, "clock": 2.3, "tier": 3, "tier_label": "Flagship"}, {"battery": 687, "ram": 3416, "memory": 50, "cores": 4, "pc": 20, "fc": 9, "weight": 151, "talk": 8, "four_g": 1, "three_g": 1, "blue": 1, "wifi": 0, "dual_sim": 0, "touch": 1, "clock": 1.3, "tier": 3, "tier_label": "Flagship"}, {"battery": 1184, "ram": 3315, "memory": 48, "cores": 1, "pc": 6, "fc": 1, "weight": 191, "talk": 14, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 1, "dual_sim": 1, "touch": 1, "clock": 1.5, "tier": 3, "tier_label": "Flagship"}, {"battery": 1872, "ram": 3153, "memory": 49, "cores": 7, "pc": 18, "fc": 14, "weight": 139, "talk": 5, "four_g": 0, "three_g": 1, "blue": 1, "wifi": 0, "dual_sim": 1, "touch": 1, "clock": 0.5, "tier": 3, "tier_label": "Flagship"}, {"battery": 673, "ram": 3541, "memory": 35, "cores": 6, "pc": 14, "fc": 13, "weight": 142, "talk": 4, "four_g": 1, "three_g": 1, "blue": 1, "wifi": 1, "dual_sim": 0, "touch": 0, "clock": 1.9, "tier": 3, "tier_label": "Flagship"}, {"battery": 1717, "ram": 3226, "memory": 62, "cores": 1, "pc": 3, "fc": 1, "weight": 130, "talk": 5, "four_g": 0, "three_g": 0, "blue": 1, "wifi": 0, "dual_sim": 0, "touch": 1, "clock": 1.3, "tier": 3, "tier_label": "Flagship"}, {"battery": 1563, "ram": 3660, "memory": 24, "cores": 8, "pc": 0, "fc": 0, "weight": 170, "talk": 5, "four_g": 1, "three_g": 1, "blue": 0, "wifi": 0, "dual_sim": 0, "touch": 1, "clock": 2.4, "tier": 3, "tier_label": "Flagship"}, {"battery": 1254, "ram": 3959, "memory": 50, "cores": 5, "pc": 6, "fc": 2, "weight": 108, "talk": 17, "four_g": 0, "three_g": 1, "blue": 0, "wifi": 0, "dual_sim": 1, "touch": 1, "clock": 1.2, "tier": 3, "tier_label": "Flagship"}, {"battery": 1793, "ram": 3533, "memory": 12, "cores": 6, "pc": 17, "fc": 10, "weight": 169, "talk": 15, "four_g": 0, "three_g": 1, "blue": 0, "wifi": 1, "dual_sim": 1, "touch": 1, "clock": 1.8, "tier": 3, "tier_label": "Flagship"}, {"battery": 1712, "ram": 3652, "memory": 63, "cores": 7, "pc": 12, "fc": 1, "weight": 137, "talk": 19, "four_g": 0, "three_g": 1, "blue": 0, "wifi": 0, "dual_sim": 0, "touch": 0, "clock": 1.4, "tier": 3, "tier_label": "Flagship"}];
+
+const BADGE_CLASSES = ['t0-badge','t1-badge','t2-badge','t3-badge'];
+
+function renderPhones() {
+  const q     = document.getElementById('phoneSearch').value.toLowerCase();
+  const tier  = document.getElementById('tierFilter').value;
+  const sort  = document.getElementById('sortFilter').value;
+
+  let filtered = PHONES.filter(p => {
+    if (tier !== '' && p.tier !== parseInt(tier)) return false;
+    if (q) {
+      const haystack = `${p.ram} ${p.battery} ${p.memory} ${p.tier_label} ${p.cores} cores ${p.pc}mp ${p.weight}g`.toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
+    return true;
+  });
+
+  filtered.sort((a,b) => {
+    if (sort === 'ram-desc')     return b.ram - a.ram;
+    if (sort === 'ram-asc')      return a.ram - b.ram;
+    if (sort === 'battery-desc') return b.battery - a.battery;
+    if (sort === 'tier-asc')     return a.tier - b.tier;
+    if (sort === 'tier-desc')    return b.tier - a.tier;
+    return 0;
+  });
+
+  document.getElementById('phoneCountLabel').textContent = `Showing ${filtered.length} of ${PHONES.length} phones`;
+
+  const list = document.getElementById('phoneList');
+  if (!filtered.length) {
+    list.innerHTML = '<div class="no-results">No phones match your filters.</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(p => {
+    const flags = ['4G','3G','BT','WiFi','Dual','Touch'];
+    const vals  = [p.four_g, p.three_g, p.blue, p.wifi, p.dual_sim, p.touch];
+    const flagHtml = flags.map((f,i) =>
+      `<span class="flag ${vals[i] ? 'flag-on' : 'flag-off'}">${f}</span>`
+    ).join('');
+
+    return `
+      <div class="phone-item">
+        <div>
+          <span class="tier-badge ${BADGE_CLASSES[p.tier]}">${p.tier_label}</span>
+          <div class="phone-specs">
+            <span class="spec-chip"><strong>${p.ram.toLocaleString()} MB</strong> RAM</span>
+            <span class="spec-chip"><strong>${p.battery.toLocaleString()} mAh</strong> battery</span>
+            <span class="spec-chip"><strong>${p.memory} GB</strong> storage</span>
+            <span class="spec-chip"><strong>${p.cores}</strong> cores</span>
+            <span class="spec-chip"><strong>${p.pc} MP</strong> cam</span>
+            <span class="spec-chip"><strong>${p.weight} g</strong></span>
+            <span class="spec-chip"><strong>${p.talk}h</strong> talk</span>
+            <span class="spec-chip"><strong>${p.clock} GHz</strong></span>
+          </div>
+        </div>
+        <div class="phone-flags">${flagHtml}</div>
+      </div>`;
+  }).join('');
+}
+
+renderPhones();
+</script>
+</body>
+</html>
